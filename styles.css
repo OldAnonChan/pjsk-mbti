@@ -135,13 +135,18 @@ footer p { margin-bottom: 4px; }
   h1 { font-size: 26px; }
   .quiz-head { flex-direction: column; }
   .progress { text-align: left; min-width: 0; width: 100%; }
+  .radar-wrap { flex-direction: column; }
+  .radar-svg { width: 78vw; height: 78vw; }
+  .scale-row button { height: 52px; touch-action: manipulation; }
+  .match { flex-wrap: wrap; }
+  .match-pct { margin-left: 48px; }
 }
 
 .avatar-img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.14); }
 .gcard-img { width: 84px; height: 84px; border-radius: 16px; object-fit: cover; object-position: top; margin: 0 auto 8px; display: block; background: rgba(255,255,255,0.05); }
 .en-tag { font-size: 11px; color: var(--accent2); border: 1px solid rgba(178,140,255,0.4); border-radius: 6px; padding: 1px 5px; margin-left: 4px; }
-.radar-wrap { display: flex; gap: 18px; align-items: center; margin: 6px 0 4px; flex-wrap: wrap; }
-.radar-svg { width: 230px; height: 230px; flex-shrink: 0; }
+.radar-wrap { display: flex; gap: 18px; align-items: center; justify-content: center; margin: 6px 0 4px; flex-wrap: wrap; }
+.radar-svg { width: 240px; height: 240px; max-width: 86vw; flex-shrink: 0; }
 .radar-legend { color: var(--ink-dim); font-size: 13px; line-height: 1.9; }
 .radar-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .radar-legend p { color: var(--ink-faint); font-size: 12px; margin-top: 4px; }
