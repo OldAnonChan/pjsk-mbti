@@ -101,37 +101,46 @@
   }
 
   function radarSVG(userPct, charPrefs) {
-    const cx = 140, cy = 140, R = 95;
-    const angles = [0, 1, 2, 3].map(i => (Math.PI * 0.5) + (i * Math.PI / 2)); // 从正上开始顺时针
-    const pt = (pct, i) => {
-      const rr = (pct / 100) * R;
-      return [cx + Math.cos(angles[i]) * rr, cy - Math.sin(angles[i]) * rr];
-    };
+    const C = 150, R = 96;
+    // 四个轴：上E/下I，左S/右N，下T/上F，右J/左P（a 在正方向）
+    const AX = [
+      { a: "E", b: "I", ax: 0, ay: -1 },
+      { a: "S", b: "N", ax: -1, ay: 0 },
+      { a: "T", b: "F", ax: 0, ay: 1 },
+      { a: "J", b: "P", ax: 1, ay: 0 },
+    ];
+    const pt = (pct, i) => [C + AX[i].ax * R * pct / 100, C + AX[i].ay * R * pct / 100];
     const poly = (pcts, fill, stroke, label) => {
       const pts = pcts.map((p, i) => pt(p, i).join(",")).join(" ");
-      return `<polygon points="${pts}" fill="${fill}" stroke="${stroke}" stroke-width="2"/><title>${label}</title>`;
+      return `<polygon points="${pts}" fill="${fill}" stroke="${stroke}" stroke-width="2" stroke-linejoin="round"/><title>${label}</title>`;
     };
     let grid = "";
     for (let g = 1; g <= 4; g++) {
-      const pcts = DIMS.map(() => g * 25);
-      const pts = pcts.map((p, i) => pt(p, i).join(",")).join(" ");
+      const pts = AX.map((_, i) => pt(g * 25, i).join(",")).join(" ");
       grid += `<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,0.10)"/>`;
     }
     let axes = "";
     for (let i = 0; i < 4; i++) {
       const [x, y] = pt(100, i);
-      axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,0.12)"/>`;
+      axes += `<line x1="${C}" y1="${C}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,0.12)"/>`;
     }
     let labels = "";
-    DIMS.forEach((d, i) => {
-      const [x, y] = pt(112, i);
-      labels += `<text x="${x}" y="${y + 4}" fill="#98a3bd" font-size="11" text-anchor="middle">${d.a}</text>`;
-      const [x2, y2] = pt(-122, i);
-      labels += `<text x="${x2}" y="${y2 + 4}" fill="#98a3bd" font-size="11" text-anchor="middle">${d.b}</text>`;
+    const anchorFor = (ax, ay) => {
+      if (ax === -1) return "start";
+      if (ax === 1) return "end";
+      return "middle";
+    };
+    AX.forEach((d, i) => {
+      // a 端标签（正方向外侧）
+      const la = [C + d.ax * (R + 20), C + d.ay * (R + 20) + 4];
+      labels += `<text x="${la[0]}" y="${la[1]}" fill="#aeb9d2" font-size="13" font-weight="700" text-anchor="${anchorFor(d.ax, d.ay)}">${d.a}</text>`;
+      // b 端标签（反方向外侧）
+      const lb = [C - d.ax * (R + 26), C - d.ay * (R + 26) + 4];
+      labels += `<text x="${lb[0]}" y="${lb[1]}" fill="#aeb9d2" font-size="13" font-weight="700" text-anchor="${anchorFor(-d.ax, -d.ay)}">${d.b}</text>`;
     });
     const userPcts = DIMS.map(d => userPct[d.key]);
     const charPcts = DIMS.map(d => charPrefs[d.key]);
-    return `<svg viewBox="0 0 280 280" class="radar-svg">
+    return `<svg viewBox="0 0 300 300" class="radar-svg" preserveAspectRatio="xMidYMid meet">
       ${grid}${axes}${labels}
       ${poly(charPcts, "rgba(178,140,255,0.28)", "#b28cff", "角色")}
       ${poly(userPcts, "rgba(53,183,232,0.30)", "#35b7e8", "你")}
