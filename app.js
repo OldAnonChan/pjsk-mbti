@@ -75,15 +75,24 @@
     let wing = null;
     if (top > 1 && top < 9) wing = en[top - 1] >= en[top + 1] ? top - 1 : top + 1;
     const tri = Object.values(CENTERS).map(c => c.slice().sort((x, y) => en[y] - en[x])[0]);
-    return { typeStr, mbti, prefs, en, top, wing, tri, answered, total: TOTAL };
+    // 一致性检测：同一维度内全部选同一个档位 → 区分度不足
+    let flatDims = 0;
+    for (const d of DIMS) {
+      const vals = DATA.questions.filter(q => q.dim === d.key).map(q => answers[q.id]).filter(v => v);
+      if (vals.length < 4) continue;
+      const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+      const sd = Math.sqrt(vals.reduce((a, b) => a + (b - mean) * (b - mean), 0) / vals.length);
+      if (sd <= 0.35) flatDims++;
+    }
+    const lowConsistency = flatDims >= 3;
+    return { typeStr, mbti, prefs, en, top, wing, tri, answered, total: TOTAL, lowConsistency };
   }
 
-  // 优化判定：四维加权距离 + 九型加成
+  // 优化判定：四维加权距离（用角色各自强度画像）+ 九型加成
   function matchPct(prefs, char) {
-    const letters = { EI: char.mbti[0], SN: char.mbti[1], TF: char.mbti[2], JP: char.mbti[3] };
     let wsum = 0, acc = 0;
     for (const d of DIMS) {
-      const charPct = letters[d.key] === d.a ? CHAR_STRENGTH : (100 - CHAR_STRENGTH);
+      const charPct = typeof char[d.key] === "number" ? char[d.key] : 50;
       acc += d.w * (100 - Math.abs(prefs[d.key] - charPct));
       wsum += d.w;
     }
@@ -173,10 +182,12 @@
     const topChar = ranked[0].c;
     const charPrefs = {};
     for (const d of DIMS) {
-      const letters = { EI: topChar.mbti[0], SN: topChar.mbti[1], TF: topChar.mbti[2], JP: topChar.mbti[3] };
-      charPrefs[d.key] = letters[d.key] === d.a ? CHAR_STRENGTH : 100 - CHAR_STRENGTH;
+      charPrefs[d.key] = typeof topChar[d.key] === "number" ? topChar[d.key] : 50;
     }
-    $("top-matches").innerHTML = `
+    const banner = s.lowConsistency
+      ? `<div class="warn-banner">⚠ 检测到你在多个维度上全部选了同一档位（或前后矛盾），区分度不足。<br>本结果参考性较低，建议凭真实感受重新作答。</div>`
+      : "";
+    $("top-matches").innerHTML = banner + `
       <div class="radar-wrap">
         ${radarSVG(s.prefs, charPrefs)}
         <div class="radar-legend">
