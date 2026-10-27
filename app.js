@@ -126,7 +126,7 @@
     DIMS.forEach((d, i) => {
       const [x, y] = pt(112, i);
       labels += `<text x="${x}" y="${y + 4}" fill="#98a3bd" font-size="11" text-anchor="middle">${d.a}</text>`;
-      const [x2, y2] = pt(-14, i);
+      const [x2, y2] = pt(-122, i);
       labels += `<text x="${x2}" y="${y2 + 4}" fill="#98a3bd" font-size="11" text-anchor="middle">${d.b}</text>`;
     });
     const userPcts = DIMS.map(d => userPct[d.key]);
